@@ -179,8 +179,8 @@
   <td>{{$value.date}}{{$value.time}}</td>
   <td>{{$value.state}}</td>
   <td class="text-center">  
-    <a  class="btn btn-warning btn-xs" data-id="{{$value.id}}">拒绝</a>
-    <a  class="btn btn-danger btn-xs">删除</a>
+    <a  class="btn btn-warning btn-xs" data-id="{{$value.id}}" data-category="{{$value.articleId}}">拒绝</a>
+    <a  class="btn btn-danger btn-xs btn-delete" data-category="{{$value.articleId}}">删除</a>
   </td>
 </tr>
 {{/each}}
