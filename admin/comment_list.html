@@ -11,7 +11,13 @@
   <link rel="stylesheet" href="css/iconfont.css">
   <link rel="stylesheet" href="css/main.css">
   <script src="./libs/jquery-1.12.4.min.js"></script>
+  <!-- 分页器的使用 -->
+  <script src="./libs/jquery.twbsPagination.js"></script>
+  <!-- 模板框的使用 -->
   <script src="./libs/template-web.js"></script>
+  <!-- 路径文件引入 -->
+  <script src="./js/ajax.js"></script>
+  <script src="./js/http.js"></script>
 </head>
 
 <body>
@@ -32,7 +38,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr>
+          <!-- <tr>
             <td>小周</td>
             <td>这是一条测试评论，欢迎光临</td>
             <td>《世界，你好》</td>
@@ -138,11 +144,11 @@
               <a href="javascript:editTr( 'rejected',11 );" class="btn btn-warning btn-xs">拒绝</a>
               <a href="javascript:editTr( 'trashed',11 );" class="btn btn-danger btn-xs">删除</a>
             </td>
-          </tr>
+          </tr> -->
         </tbody>
       </table>
       <div class="row text-center">
-        <ul class="pagination pagination-sm">
+        <!-- <ul class="pagination pagination-sm">
           <li class="page-item first disabled"><a href="#" class="page-link">首页</a></li>
           <li class="page-item prev disabled"><a href="#" class="page-link">上一页</a></li>
           <li class="page-item active"><a href="#" class="page-link">1</a></li>
@@ -154,12 +160,65 @@
           <li class="page-item"><a href="#" class="page-link">7</a></li>
           <li class="page-item next"><a href="#" class="page-link">下一页</a></li>
           <li class="page-item last"><a href="#" class="page-link">尾页</a></li>
-        </ul>
+        </ul> -->
         <ul id="pagination" class="pagination-sm"></ul>
       </div>
 
     </div>
   </div>
 </body>
+<!-- href="javascript:editTr( 'rejected',11 );" -->
+<!-- href="javascript:editTr( 'trashed',11 );" -->
+<!-- 模板框 -->
+<script id="commentListTemplate" type="text/html">
+{{each data}}
+<tr>
+  <td>{{$value.author}}</td>
+  <td>{{$value.content}}</td>
+  <td>《{{$value.title}}》</td>
+  <td>{{$value.date}}{{$value.time}}</td>
+  <td>{{$value.state}}</td>
+  <td class="text-center">  
+    <a  class="btn btn-warning btn-xs" data-id="{{$value.id}}">拒绝</a>
+    <a  class="btn btn-danger btn-xs">删除</a>
+  </td>
+</tr>
+{{/each}}
+</script>
+<script>
+  function getCommentList(page = 1) {
+    $.ajax({
+      type: "get",
+      url: BigNew.comment_list,
+      data: {
+        page: page,
+        perpage: 10
+      },
+      dataType: "json",
+      success: function (response) {
+        const data = response.data
+        const state = response.data.data
+        // console.log(state)
+        if (response.code === 200) {
+          const result = template('commentListTemplate', data)
+          $('.table-striped tbody').html(result)
+        }
+        for (let i = 0; i < state.length; i++) {
+          if (state[i].state === '已通过') {
+            $(`[data-id="${state[i].id}"]`).attr('class', 'btn btn-warning btn-xs btn-reject')
+          } else if (state[i].state === '待审核') {
+            $(`[data-id="${state[i].id}"]`).html('批准')
+            $(`[data-id="${state[i].id}"]`).attr('class', 'btn btn-info btn-xs btn-pass')
+          } else if (state[i].state === '已拒绝') {
+            $(`[data-id="${state[i].id}"]`).remove()
+          }
+        }
+      }
+    });
+  }
+
+  getCommentList()
+
+</script>
 
 </html>
