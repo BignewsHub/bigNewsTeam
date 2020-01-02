@@ -10,9 +10,11 @@
   <link rel="stylesheet" href="css/reset.css">
   <link rel="stylesheet" href="css/iconfont.css">
   <link rel="stylesheet" href="css/main.css">
+  <!-- jQuery文件的引入 -->
   <script src="./libs/jquery-1.12.4.min.js"></script>
   <!-- 分页器的使用 -->
   <script src="./libs/jquery.twbsPagination.js"></script>
+  <script src="./libs/bootstrap/js/bootstrap.min.js"></script>
   <!-- 模板框的使用 -->
   <script src="./libs/template-web.js"></script>
   <!-- 路径文件引入 -->
@@ -161,7 +163,7 @@
           <li class="page-item next"><a href="#" class="page-link">下一页</a></li>
           <li class="page-item last"><a href="#" class="page-link">尾页</a></li>
         </ul> -->
-        <ul id="pagination" class="pagination-sm"></ul>
+        <ul id="pagination-demo" class="pagination-sm"></ul>
       </div>
 
     </div>
@@ -179,8 +181,8 @@
   <td>{{$value.date}}{{$value.time}}</td>
   <td>{{$value.state}}</td>
   <td class="text-center">  
-    <a  class="btn btn-warning btn-xs" data-id="{{$value.id}}">拒绝</a>
-    <a  class="btn btn-danger btn-xs">删除</a>
+    <a  class="btn btn-warning btn-xs" data-id="{{$value.id}}" data-category="{{$value.articleId}}">拒绝</a>
+    <a  class="btn btn-danger btn-xs btn-delete" data-id="{{$value.id}}">删除</a>
   </td>
 </tr>
 {{/each}}
@@ -198,19 +200,21 @@
       success: function (response) {
         const data = response.data
         const state = response.data.data
-        // console.log(state)
+        console.log(response)
+        window.totalCount = response.data.totalCount
         if (response.code === 200) {
           const result = template('commentListTemplate', data)
           $('.table-striped tbody').html(result)
+          getPagination(page, data.totalPage)
         }
         for (let i = 0; i < state.length; i++) {
           if (state[i].state === '已通过') {
-            $(`[data-id="${state[i].id}"]`).attr('class', 'btn btn-warning btn-xs btn-reject')
+            $(`[data-category="${state[i].articleId}"]`).attr('class', 'btn btn-warning btn-xs btn-reject')
           } else if (state[i].state === '待审核') {
-            $(`[data-id="${state[i].id}"]`).html('批准')
-            $(`[data-id="${state[i].id}"]`).attr('class', 'btn btn-info btn-xs btn-pass')
+            $(`[data-category="${state[i].articleId}"]`).html('批准')
+            $(`[data-category="${state[i].articleId}"]`).attr('class', 'btn btn-info btn-xs btn-pass')
           } else if (state[i].state === '已拒绝') {
-            $(`[data-id="${state[i].id}"]`).remove()
+            $(`[data-category="${state[i].articleId}"]`).remove()
           }
         }
       }
@@ -218,6 +222,95 @@
   }
 
   getCommentList()
+
+
+  //通过按钮
+  $('tbody').on('click', '.btn-pass', function () {
+    const aId = $(this).attr('data-id')
+    $.ajax({
+      type: "post",
+      url: BigNew.comment_pass,
+      data: {
+        id: aId
+      },
+      dataType: "json",
+      success: function (response) {
+        // console.log(response)
+        if (response.code === 200) {
+          alert(response.msg)
+          getCommentList()
+        }
+      }
+    });
+  })
+
+  //拒绝按钮
+  $('tbody').on('click', '.btn-reject', function () {
+    const aId = $(this).attr('data-id')
+    $.ajax({
+      type: "post",
+      url: BigNew.comment_reject,
+      data: {
+        id: aId
+      },
+      dataType: "json",
+      success: function (response) {
+        // console.log(response)
+        if (response.code === 200) {
+          alert(response.msg)
+          getCommentList()
+        }
+      }
+    });
+  })
+
+  //删除按钮
+  $('tbody').on('click', '.btn-delete', function () {
+    const aId = $(this).attr('data-id')
+    // console.log(aId)
+    $.ajax({
+      type: "post",
+      url: BigNew.comment_delete,
+      data: {
+        id: aId
+      },
+      dataType: "json",
+      success: function (response) {
+        console.log(response)
+        if (response.code === 200) {
+          alert(response.msg)
+          if (totalCount % 10 === 1) {
+            getCommentList(page - 1)
+            return;
+          }
+          getCommentList(page)
+
+        }
+      }
+    });
+  })
+
+  //分页器
+  const $pagination = $('#pagination-demo')
+  function getPagination(startPage = 1, totalPage = 20) {
+    $pagination.twbsPagination('destroy');
+    $pagination.twbsPagination({
+      totalPages: totalPage,
+      startPage: startPage,
+      first: '首页',
+      prev: '上一页',
+      next: '下一页',
+      last: '尾页',
+      visiblePages: 7,
+      onPageClick: function (event, page) {
+        // console.log(event)
+        window.page = page
+        if (startPage !== page) {
+          getCommentList(page)
+        }
+      }
+    });
+  }
 
 </script>
 
