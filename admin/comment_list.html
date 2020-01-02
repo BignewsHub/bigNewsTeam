@@ -179,8 +179,8 @@
   <td>{{$value.date}}{{$value.time}}</td>
   <td>{{$value.state}}</td>
   <td class="text-center">  
-    <a  class="btn btn-warning btn-xs" data-id="{{$value.id}}">拒绝</a>
-    <a  class="btn btn-danger btn-xs">删除</a>
+    <a  class="btn btn-warning btn-xs" data-id="{{$value.id}}" data-category="{{$value.articleId}}">拒绝</a>
+    <a  class="btn btn-danger btn-xs btn-delete" data-id="{{$value.id}}">删除</a>
   </td>
 </tr>
 {{/each}}
@@ -205,12 +205,12 @@
         }
         for (let i = 0; i < state.length; i++) {
           if (state[i].state === '已通过') {
-            $(`[data-id="${state[i].id}"]`).attr('class', 'btn btn-warning btn-xs btn-reject')
+            $(`[data-category="${state[i].articleId}"]`).attr('class', 'btn btn-warning btn-xs btn-reject')
           } else if (state[i].state === '待审核') {
-            $(`[data-id="${state[i].id}"]`).html('批准')
-            $(`[data-id="${state[i].id}"]`).attr('class', 'btn btn-info btn-xs btn-pass')
+            $(`[data-category="${state[i].articleId}"]`).html('批准')
+            $(`[data-category="${state[i].articleId}"]`).attr('class', 'btn btn-info btn-xs btn-pass')
           } else if (state[i].state === '已拒绝') {
-            $(`[data-id="${state[i].id}"]`).remove()
+            $(`[data-category="${state[i].articleId}"]`).remove()
           }
         }
       }
@@ -218,6 +218,68 @@
   }
 
   getCommentList()
+
+
+  //通过按钮
+  $('tbody').on('click', '.btn-pass', function () {
+    const aId = $(this).attr('data-id')
+    $.ajax({
+      type: "post",
+      url: BigNew.comment_pass,
+      data: {
+        id: aId
+      },
+      dataType: "json",
+      success: function (response) {
+        // console.log(response)
+        if (response.code === 200) {
+          alert(response.msg)
+          getCommentList()
+        }
+      }
+    });
+  })
+
+  //拒绝按钮
+  $('tbody').on('click', '.btn-reject', function () {
+    const aId = $(this).attr('data-id')
+    $.ajax({
+      type: "post",
+      url: BigNew.comment_reject,
+      data: {
+        id: aId
+      },
+      dataType: "json",
+      success: function (response) {
+        // console.log(response)
+        if (response.code === 200) {
+          alert(response.msg)
+          getCommentList()
+        }
+      }
+    });
+  })
+
+  //删除按钮
+  $('tbody').on('click', '.btn-delete', function () {
+    const aId = $(this).attr('data-id')
+    // console.log(aId)
+    $.ajax({
+      type: "post",
+      url: BigNew.comment_delete,
+      data: {
+        id: aId
+      },
+      dataType: "json",
+      success: function (response) {
+        // console.log(response)
+        if (response.code === 200) {
+          alert(response.msg)
+          getCommentList()
+        }
+      }
+    });
+  })
 
 </script>
 
