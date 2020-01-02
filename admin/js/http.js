@@ -1,5 +1,5 @@
 /* 沙箱模式 */
-(function(w) {
+(function (w) {
   var baseURL = "http://localhost:8080/api/v1";
   var BigNew = {
     baseURL: baseURL, //基地址
